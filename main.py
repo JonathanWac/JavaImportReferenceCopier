@@ -1,8 +1,5 @@
-
 import os
 import shutil
-
-
 
 
 def runCopyFunction(oldImpStr: str, newImpStr: str):
@@ -36,8 +33,11 @@ def copyFile(oldSrcFileDir: str, newSrcFolderDir: str):
         print(f"Error occurred, path not valid: {oldSrcFileDir}")
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    args = ["import com.ge.capital.cfs.lease.json.model.userprofilejson",
-            "import com.myaccounts.user.userservice.model.userprofilejson",
-            "targeDoc.java"]
+    oldProjDir = "/home/deck/PycharmProjects/JavaImportReferenceCopier/Project1"
+    oldImpStr = "import com.ge.capital.cfs.lease.json.model.userprofilejson"
+
+    newProjDir = "/home/deck/PycharmProjects/JavaImportReferenceCopier/Project2"
+    newImpStr = "import com.myaccounts.user.userservice.model.userprofilejson"
+
+    targetFile = "targeDoc.java"
