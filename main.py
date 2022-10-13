@@ -8,7 +8,6 @@ import shutil
 def runCopyFunction(oldImpStr: str, newImpStr: str):
     oldImpTokens = parseImportStr(oldImpStr)
     newImpTokens = parseImportStr(newImpStr)
-    pass
 
 
 def parseImportStr(impStr: str, delimiter: str = "."):
