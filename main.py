@@ -46,7 +46,7 @@ def navigateAndFindPath(pathTokens: List[str], baseDir: str, debug=globalDebug):
             #   1) If a folder is available, always navigate down it
             #   2) if a file is the only option-> return the current directory + filename
             #   3) If neither are avaiable that should mean that the current dir is available -> return currDirr
-            #   4)  If scenario 3, but no folder has been navigated yet, that means we have an invalid path -> return empty string
+            #   4) If scenario 3, but no folder has been navigated yet, that means we have an invalid path -> return empty string
             if token in folders:
                 hasNavigated = True
                 localDir = os.path.join(localDir, token)
@@ -64,7 +64,7 @@ def navigateAndFindPath(pathTokens: List[str], baseDir: str, debug=globalDebug):
                 print(f"{folders=}, {files=}, {parsedFiles=}")
             currDir = os.path.join(currDir, token)
         i += 1
-    return ""
+    return "", ""
 
 
 def runCopyFunction(oldImpStr: str, newImpStr: str, oldProjDir: str, newProjDir: str, debug=globalDebug):
@@ -113,13 +113,20 @@ def copyFile(oldSrcFileDir: str, newSrcFolderDir: str):
 
 
 if __name__ == '__main__':
-    oldProjDir = "/home/deck/PycharmProjects/JavaImportReferenceCopier/testFolder/Project1"
+    # oldProjDir = "/home/deck/PycharmProjects/JavaImportReferenceCopier/testFolder/Project1"
+    # oldImpStr = "import com.ge.capital.cfs.lease.json.model.userprofilejson"
+    #
+    # newProjDir = "/home/deck/PycharmProjects/JavaImportReferenceCopier/testFolder/Project2"
+    # newImpStr = "import com.myaccounts.user.userservice.model.userprofilejson"
+    #
+    # targetFile = "targeDoc.java"
+
+    oldProjDir = 'C:\\Users\\Stark Laptop\\PycharmProjects\\JavaImportReferenceCopier\\testFolder\\Project1'
     oldImpStr = "import com.ge.capital.cfs.lease.json.model.userprofilejson"
 
-    newProjDir = "/home/deck/PycharmProjects/JavaImportReferenceCopier/testFolder/Project2"
+    newProjDir = 'C:\\Users\\Stark Laptop\\PycharmProjects\\JavaImportReferenceCopier\\testFolder\\Project2'
     newImpStr = "import com.myaccounts.user.userservice.model.userprofilejson"
 
     targetFile = "targeDoc.java"
-    # oldProjDir = "/home/deck/PycharmProjects/JavaImportReferenceCopier/Project1"
 
     runCopyFunction(oldImpStr, newImpStr, oldProjDir, newProjDir)
