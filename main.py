@@ -1,8 +1,22 @@
 import os
 import shutil
 from typing import List
+import re
 
 globalDebug = True
+
+
+def copytree(src, dst, symlinks=False, ignore=None):
+    if not os.path.exists(dst):
+        os.makedirs(dst)
+    for item in os.listdir(src):
+        s = os.path.join(src, item)
+        d = os.path.join(dst, item)
+        if os.path.isdir(s):
+            copytree(s, d, symlinks, ignore)
+        else:
+            if not os.path.exists(d) or os.stat(s).st_mtime - os.stat(d).st_mtime > 1:
+                shutil.copy2(s, d)
 
 
 def getFilesAndFolders(currPath):
@@ -20,7 +34,6 @@ def getFilesAndFolders(currPath):
         print("ERROR:")
 
 
-import re
 
 fileTypePattern = re.compile("(\\.\\w*)+")
 
@@ -40,6 +53,7 @@ def navigateAndFindPath(pathTokens: List[str], baseDir: str, debug=globalDebug):
     hasNavigated = False
     for token in pathTokens:
         if os.path.exists(currDir):
+            #TODO Fix code so that it accesses the last token
             files, folders = getFilesAndFolders(currDir)
             parsedFiles = parseFilesDict(files)
             # Scenarios:
@@ -104,10 +118,19 @@ def copyFile(oldSrcFileDir: str, newSrcFolderDir: str):
     """
 
     if os.path.exists(oldSrcFileDir):
-        if not os.path.exists(newSrcFolderDir):
-            os.makedirs(newSrcFolderDir)
-        # TODO Need to fix the copy so that if you have a directory it will copy the whole directory including the files.
-        shutil.copy2(oldSrcFileDir, newSrcFolderDir)
+        # if not os.path.exists(newSrcFolderDir):
+        #     os.makedirs(newSrcFolderDir)
+        if os.path.isdir(oldSrcFileDir):
+            copytree(oldSrcFileDir, newSrcFolderDir)
+        elif os.path.isfile(oldSrcFileDir):
+            # newSrcFolderDir = 'C:\\Users\\Stark Laptop\\PycharmProjects\\JavaImportReferenceCopier\\testFolder\\Project2\\com\\ge\\capital\\cfs\\lease\\json\\model\\testFile2.txt'
+
+            from pathlib import Path
+            newSrcFolderPath = Path(newSrcFolderDir)
+            # print(newSrcFolderPath.parent.absolute())
+            if not os.path.exists(newSrcFolderPath.parent.absolute()):
+                os.makedirs(newSrcFolderPath.parent.absolute())
+            shutil.copy2(oldSrcFileDir, newSrcFolderDir)
     else:
         print(f"Error occurred, path not valid: {oldSrcFileDir}")
 
@@ -119,14 +142,15 @@ if __name__ == '__main__':
     # newProjDir = "/home/deck/PycharmProjects/JavaImportReferenceCopier/testFolder/Project2"
     # newImpStr = "import com.myaccounts.user.userservice.model.userprofilejson"
     #
-    # targetFile = "targeDoc.java"
+    # targetFile = "targetDoc.java"
 
+    # Tested for 1 file to 1 file
     oldProjDir = 'C:\\Users\\Stark Laptop\\PycharmProjects\\JavaImportReferenceCopier\\testFolder\\Project1'
-    oldImpStr = "import com.ge.capital.cfs.lease.json.model.userprofilejson"
+    oldImpStr = "import com.ge.capital.cfs.lease.json.model"
 
     newProjDir = 'C:\\Users\\Stark Laptop\\PycharmProjects\\JavaImportReferenceCopier\\testFolder\\Project2'
     newImpStr = "import com.myaccounts.user.userservice.model.userprofilejson"
 
-    targetFile = "targeDoc.java"
+    targetFile = "targetDoc.java"
 
     runCopyFunction(oldImpStr, newImpStr, oldProjDir, newProjDir)
