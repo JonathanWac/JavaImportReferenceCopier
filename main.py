@@ -125,8 +125,7 @@ def convertPathToPackage(path: str, packageSep: str = "."):
     return impStatement
 
 
-def replaceFileText(filePath: str, replacementStrs: Dict[str,str], lineByLine: bool = False):
-
+def replaceFileText(filePath: str, replacementStrs: Dict[str, str], lineByLine: bool = False):
     if lineByLine:
         lines = []
         with open(filePath) as infile:
@@ -144,7 +143,6 @@ def replaceFileText(filePath: str, replacementStrs: Dict[str,str], lineByLine: b
 
         if content is not None:
 
-
             for origStr, replacement in replacementStrs.items():
                 content = content.replace(origStr, replacement)
 
@@ -152,11 +150,11 @@ def replaceFileText(filePath: str, replacementStrs: Dict[str,str], lineByLine: b
                 outfile.write(content)
 
 
-
-
 def runCopyFunction(oldImpStr: str, oldProjDir: str, newProjDir: str, map: Dict, debug=globalDebug,
-                    defLocalWriteLoc: str = ""):
-    replacementStrs = {}
+                    defLocalWriteLoc: str = "", replacementStrs: Dict[str, str] = None, ):
+    if replacementStrs is None:
+        replacementStrs = {}
+
     oldImpTokens = parseImportStr(oldImpStr)
     if globalDebug:
         print(f"{oldImpStr=} -> {oldImpTokens=}")
@@ -251,6 +249,54 @@ def copyFile(oldSrcFileDir: str, newSrcFolderDir: str):
         print(f"Error occurred, path not valid: {oldSrcFileDir}")
 
 
+# TODO may need to change ? to a {1}
+fromImportPattern = re.compile("(from\\s+\\w+(\\.\\w+)*){1}(\\s+import\\s+\\w+(\\.\\w+)*)*")
+
+
+def parseImpStringsFromFile(infileName: str) -> List[str]:
+    finalImpStrList = []
+    with open(infileName) as inFile:
+        inFileData = inFile.read()
+
+        fromImportMatches = fromImportPattern.findall(inFileData)
+        for importMatch in fromImportMatches:
+            if importMatch not in finalImpStrList:
+                finalImpStrList.append(importMatch)
+        # TODO check on Java project exacly how from __ import __ statements work
+        importMatches = importPattern.findall(inFileData)
+        for importMatch in importMatches:
+            isPresent = False
+            for importFroms in finalImpStrList:
+                if importMatch in importFroms:
+                    isPresent = True
+                    continue
+            if not isPresent:
+                finalImpStrList.append(importMatch)
+
+    return finalImpStrList
+
+
+def driverStart(oldProjDir: str, newProjDir: str, targetFiles: List[str], renameMap: Dict[str, str],
+                defLocalWriteLoc="default\\assets"):
+    allImpStrsRan = []
+    for targetFile in targetFiles:
+        # TODO create function to return a list of import statements from a file
+        oldImpStrs = parseImpStringsFromFile(targetFile)
+        for impStrRan in allImpStrsRan:
+            if impStrRan in oldImpStrs:
+                oldImpStrs.remove(impStrRan)
+
+        replacementStrs = {}
+        for oldImpStatement in oldImpStrs:
+            replacementStrs = runCopyFunction(oldImpStatement, oldProjDir, newProjDir, renameMap,
+                                              defLocalWriteLoc="default\\assets", replacementStrs=replacementStrs)
+        # TODO sort replacementStrs in order of string length
+        # TODO Complex sort: Group strings that share common substrings,
+        #   sort by length, then resort the entire list by length
+        replaceFileText(targetFile, replacementStrs)
+        allImpStrsRan.extend(oldImpStrs)
+
+
 if __name__ == '__main__':
     # oldProjDir = "/home/deck/PycharmProjects/JavaImportReferenceCopier/testFolder/Project1"
     # oldImpStr = "import com.ge.capital.cfs.lease.json.model.userprofilejson"
@@ -277,6 +323,8 @@ if __name__ == '__main__':
         "model": "com\\myaccounts\\user\\userservice\\model",
         "service": "com\\myaccounts\\user\\userservice\\service"
     }
-    replacementTexts = runCopyFunction(oldImpStr, oldProjDir, newProjDir, renameMap, defLocalWriteLoc="default\\assets")
+    replacementStrs = {}
+    replacementStrs = runCopyFunction(oldImpStr, oldProjDir, newProjDir, renameMap, defLocalWriteLoc="default\\assets",
+                                      replacementStrs=replacementStrs)
 
-    replaceFileText(targetFilePath, replacementTexts)
+    replaceFileText(targetFilePath, replacementStrs)
